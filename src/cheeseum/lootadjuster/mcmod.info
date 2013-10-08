@@ -3,8 +3,8 @@
     "modid": "LootAdjuster",
     "name": "Dungeon Loot Chest Adjuster",
     "description": "Allows customization of dungeon loot chest contents registered with ChestGenHooks.",
-    "version": "1.1",
-    "mcversion": "1.5.2",
+    "version": "@VERSION@",
+    "mcversion": "@MCVERSION@",
     "authors": [
         "Cheeseum"
     ]

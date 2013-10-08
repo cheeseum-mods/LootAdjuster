@@ -17,8 +17,7 @@ import net.minecraftforge.common.Property;
 import net.minecraft.util.WeightedRandomChestContent;
 
 import cpw.mods.fml.common.Mod;
-import cpw.mods.fml.common.Mod.PreInit;
-import cpw.mods.fml.common.Mod.PostInit;
+import cpw.mods.fml.common.Mod.EventHandler;
 import cpw.mods.fml.common.network.NetworkMod;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 import cpw.mods.fml.common.event.FMLPostInitializationEvent;
@@ -26,28 +25,32 @@ import cpw.mods.fml.common.FMLLog;
 
 import cpw.mods.fml.relauncher.ReflectionHelper;
 
-@Mod( modid = "LootAdjuster", name = "Dungeon Loot Chest Adjuster", version = "1.1" )
+@Mod( modid = "LootAdjuster", name = "Dungeon Loot Chest Adjuster", version = "@VERSION@" )
 @NetworkMod(clientSideRequired=false, serverSideRequired=true)
 public class mod_LootAdjuster
 {
     private Configuration config;
+    private boolean populateConfig = false;
 
     public mod_LootAdjuster() {
     }
     
-    @PreInit
+    @EventHandler
     public void preInit(FMLPreInitializationEvent event) {
-        this.config = new Configuration(event.getSuggestedConfigurationFile());
+    	File configFile = event.getSuggestedConfigurationFile();
+    	if (!configFile.exists()) {
+    		populateConfig = true;
+    	}
+        this.config = new Configuration(configFile);
         this.config.load();
         this.config.addCustomCategoryComment("loot", "Format for items in each category is as follows: \"ItemId:ItemMeta,MinFrequency,MaxFrequency,Weight\". Non-existant categories are ignored.");
     }
 
-    @PostInit
+    @EventHandler
     public void postInit(FMLPostInitializationEvent event) {
-        // Repopulate the config with defaults if instructed
-        Property resetDefaults = this.config.get(Configuration.CATEGORY_GENERAL, "resetDefaults", false, "Resets the file with default loot values");
-        if (resetDefaults.getBoolean(false)) {
-            FMLLog.info("Repopulating configuration file with defaults!");
+        // Populate the config with defaults if it didn't exist
+        if (populateConfig) {
+            FMLLog.info("Populating configuration file with defaults!");
 
             Map<String, ChestGenHooks> chestInfo = ReflectionHelper.getPrivateValue(ChestGenHooks.class, null, "chestInfo");
             for (String category : chestInfo.keySet()) {
@@ -64,7 +67,6 @@ public class mod_LootAdjuster
                 this.config.getCategory("loot").put(category, lootEntry);
             }
         }
-        resetDefaults.set(false);
         
         for(String category : LootConfigHelper.getLootCategories(this.config)) {
             List<WeightedRandomChestContent> lootEntries = LootConfigHelper.getLootForCategory(this.config, category);

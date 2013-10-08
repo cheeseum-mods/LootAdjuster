@@ -1,0 +1,61 @@
+<?xml version="1.0" ?>
+<project name="LootAdjuster" default="build">
+    <property name="minecraft.version" value="1.6.2" />
+    <property name="build.version" value="1.2" />
+    <property name="dir.mcp" location="../../${minecraft.version}/forge-dirty/mcp" />
+    <property name="dir.source" location="src" />
+    <property name="dir.bin" location="bin" />
+    
+    <target name="clean">
+		<delete file="${dir.mcp}/src/minecraft/mcmod.info" />
+		<delete file="${dir.mcp}/src/minecraft/pack.mcmeta" />
+		<delete dir="${dir.mcp}/src/minecraft/cheeseum" />
+		<delete dir="${dir.mcp}/reobf/minecraft" />
+    </target>
+    
+    <target name="prep">
+		<copy todir="${dir.mcp}/src/minecraft" overwrite="true">
+			<fileset dir="${dir.source}" />
+		</copy>
+		<replace dir="${dir.mcp}/src/minecraft/cheeseum" token="@VERSION" value="${build.version}" />
+		<replace dir="${dir.mcp}/src/minecraft/cheeseum" token="@MCVERSION" value="${minecraft.version}" />
+	</target>
+	
+    <target name="recompile">
+        <exec dir="${dir.mcp}" executable="cmd" osfamily="windows">
+			<arg line="/c recompile.bat" />
+		</exec>
+		<exec dir="${dir.mcp}" executable="bash" osfamily="unix">
+			<arg line="recompile.sh" />
+		</exec>
+    </target>
+    
+    <target name="reobfuscate">
+		 <exec dir="${dir.mcp}" executable="cmd" osfamily="windows">
+			<arg line="/c reobfuscate.bat" />
+		</exec>
+		<exec dir="${dir.mcp}" executable="bash" osfamily="unix">
+			<arg line="reobfuscate.sh" />
+		</exec>
+    </target>
+
+    <target name="reobfuscate-srg">
+		 <exec dir="${dir.mcp}" executable="cmd" osfamily="windows">
+			<arg line="/c reobfuscate_srg.bat" />
+		</exec>
+		<exec dir="${dir.mcp}" executable="bash" osfamily="unix">
+			<arg line="reobfuscate_srg.sh" />
+		</exec>
+    </target>
+    
+    <target name="package">
+        <jar destfile="${ant.project.name}-${build.version}-${minecraft.version}.jar">
+			<fileset dir="${dir.mcp}/reobf/minecraft">
+			    <include name="cheeseum/**/*.class"/>
+			</fileset>
+        </jar>
+    </target>
+   
+    <target name="build" depends="clean, prep, recompile, reobfuscate-srg, package">
+    </target>
+</project>
