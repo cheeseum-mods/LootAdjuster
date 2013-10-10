@@ -17,8 +17,8 @@
 		<copy todir="${dir.mcp}/src/minecraft" overwrite="true">
 			<fileset dir="${dir.source}" />
 		</copy>
-		<replace dir="${dir.mcp}/src/minecraft/cheeseum" token="@VERSION" value="${build.version}" />
-		<replace dir="${dir.mcp}/src/minecraft/cheeseum" token="@MCVERSION" value="${minecraft.version}" />
+		<replace dir="${dir.mcp}/src/minecraft/cheeseum" token="@VERSION@" value="${build.version}" />
+		<replace dir="${dir.mcp}/src/minecraft/cheeseum" token="@MCVERSION@" value="${minecraft.version}" />
 	</target>
 	
     <target name="recompile">
@@ -50,9 +50,8 @@
     
     <target name="package">
         <jar destfile="${ant.project.name}-${build.version}-${minecraft.version}.jar">
-			<fileset dir="${dir.mcp}/reobf/minecraft">
-			    <include name="cheeseum/**/*.class"/>
-			</fileset>
+			<fileset dir="${dir.mcp}/reobf/minecraft" includes="cheeseum/**/*.class" />
+			<zipfileset dir="${dir.mcp}/src/minecraft" includes="cheeseum/**/mcmod.info" fullpath="mcmod.info"/>
         </jar>
     </target>
    
