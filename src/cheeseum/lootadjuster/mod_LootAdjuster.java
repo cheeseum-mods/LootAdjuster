@@ -11,22 +11,22 @@ import java.util.ArrayList;
 
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.ChestGenHooks;
-import net.minecraftforge.common.Configuration;
-import net.minecraftforge.common.Property;
+import net.minecraftforge.common.config.Configuration;
+import net.minecraftforge.common.config.Property;
 
 import net.minecraft.util.WeightedRandomChestContent;
 
 import cpw.mods.fml.common.Mod;
 import cpw.mods.fml.common.Mod.EventHandler;
-import cpw.mods.fml.common.network.NetworkMod;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 import cpw.mods.fml.common.event.FMLPostInitializationEvent;
+import cpw.mods.fml.common.network.NetworkCheckHandler;
 import cpw.mods.fml.common.FMLLog;
 
 import cpw.mods.fml.relauncher.ReflectionHelper;
+import cpw.mods.fml.relauncher.Side;
 
 @Mod( modid = "LootAdjuster", name = "Dungeon Loot Chest Adjuster", version = "@VERSION@" )
-@NetworkMod(clientSideRequired=false, serverSideRequired=true)
 public class mod_LootAdjuster
 {
     private Configuration config;
@@ -75,5 +75,10 @@ public class mod_LootAdjuster
         }
 
         this.config.save();
+    }
+    
+    @NetworkCheckHandler
+    public boolean checkNetworkMods(Map mods, Side side) {
+    	return true; // server-side only mod
     }
 }
