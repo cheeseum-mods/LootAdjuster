@@ -1,4 +1,4 @@
-package cheeseum.lootadjuster;
+package com.cheeseum.lootadjuster;
 
 public class LootData {
     int itemId;

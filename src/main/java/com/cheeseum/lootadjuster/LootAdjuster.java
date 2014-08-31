@@ -1,4 +1,4 @@
-package cheeseum.lootadjuster;
+package com.cheeseum.lootadjuster;
 
 import java.util.Map;
 import java.io.File;
@@ -8,6 +8,9 @@ import java.io.IOException;
 import java.util.logging.Level;
 import java.util.List;
 import java.util.ArrayList;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.ChestGenHooks;
@@ -26,13 +29,15 @@ import cpw.mods.fml.common.FMLLog;
 import cpw.mods.fml.relauncher.ReflectionHelper;
 import cpw.mods.fml.relauncher.Side;
 
-@Mod( modid = "LootAdjuster", name = "Dungeon Loot Chest Adjuster", version = "@VERSION@" )
-public class mod_LootAdjuster
+@Mod( modid = "LootAdjuster", name = "Dungeon Loot Chest Adjuster", version = "@VERSION@", dependencies = "after:*")
+public class LootAdjuster
 {
+	public static final Logger logger = LogManager.getFormatterLogger("LootAdjuster");
+	
     private Configuration config;
     private boolean populateConfig = false;
 
-    public mod_LootAdjuster() {
+    public LootAdjuster() {
     }
     
     @EventHandler
@@ -50,7 +55,7 @@ public class mod_LootAdjuster
     public void postInit(FMLPostInitializationEvent event) {
         // Populate the config with defaults if it didn't exist
         if (populateConfig) {
-            FMLLog.info("Populating configuration file with defaults!");
+            LootAdjuster.logger.info("Populating configuration file with defaults!");
 
             Map<String, ChestGenHooks> chestInfo = ReflectionHelper.getPrivateValue(ChestGenHooks.class, null, "chestInfo");
             for (String category : chestInfo.keySet()) {

@@ -1,0 +1,16 @@
+[
+{
+  "modid": "LootAdjuster",
+  "name": "Loot Adjuster",
+  "description": "User-configurable dungeon chest loot.",
+  "version": "${version}",
+  "mcversion": "${mcversion}",
+  "url": "https://github.com/Cheeseum/LootAdjuster",
+  "updateUrl": "",
+  "authors": ["Cheeseum"],
+  "credits": "",
+  "logoFile": "",
+  "screenshots": [],
+  "dependencies": ["after:*"]
+}
+]

@@ -1,4 +1,4 @@
-package cheeseum.lootadjuster;
+package com.cheeseum.lootadjuster;
 
 import java.util.Set;
 import java.util.List;
@@ -35,7 +35,7 @@ public class LootConfigHelper
                 String itemData[] = lootData[0].split(":");
 
                 if (lootData.length < 4 || itemData.length < 2) {
-                    FMLLog.severe("Improperly formatted loot config! Grues ahead!");
+                    LootAdjuster.logger.warn("Improperly formatted loot config! Grues ahead!");
                     continue;
                 }
 
@@ -63,7 +63,7 @@ public class LootConfigHelper
     	GameRegistry.UniqueIdentifier uid = GameRegistry.findUniqueIdentifierFor(loot.theItemId.getItem());
     
     	if (uid == null) {
-    		FMLLog.severe("Couldn't find item data for loot entry!");
+    		LootAdjuster.logger.error("Couldn't find item data for loot entry!");
     		return "";
     	}
     	
