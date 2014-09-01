@@ -44,8 +44,12 @@ public class LootConfigHelper
                 int itemMeta = itemData.length > 2 ? Integer.parseInt(itemData[2]) : 0;
                 
                 ItemStack item = GameRegistry.findItemStack(modId, itemName, 1);
+                if (item == null) {
+                	LootAdjuster.logger.error("Unrecognized item data %s, skipping!", lootData[0]);
+                	continue;
+                }
+            
                 item.setItemDamage(itemMeta);
-                
                 ret.add(
                     new WeightedRandomChestContent(
                     	item,
@@ -61,15 +65,18 @@ public class LootConfigHelper
 
     public static String getLootString(WeightedRandomChestContent loot) {
     	GameRegistry.UniqueIdentifier uid = GameRegistry.findUniqueIdentifierFor(loot.theItemId.getItem());
-    
-    	if (uid == null) {
-    		LootAdjuster.logger.error("Couldn't find item data for loot entry!");
-    		return "";
+    	String combinedName = "";
+    	
+    	if (uid != null) {
+    		combinedName = String.format("%s:%s", uid.modId, uid.name);
+    	} else {
+    		combinedName = loot.theItemId.getItem().getUnlocalizedName();
+    		LootAdjuster.logger.error("Couldn't find unique identifier for item %s, falling back to unlocalized name, things will break!", combinedName);
     	}
     	
-        return String.format("\"%s:%s:%d,%d,%d,%d\"", 
-            uid.modId, uid.name,
-            loot.theItemId.getItemDamage(),
+        return String.format("\"%s:%d,%d,%d,%d\"", 
+            combinedName,
+        	loot.theItemId.getItemDamage(),
             loot.theMinimumChanceToGenerateItem,
             loot.theMaximumChanceToGenerateItem,
             loot.itemWeight
