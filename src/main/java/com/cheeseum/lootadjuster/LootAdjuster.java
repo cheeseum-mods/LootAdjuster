@@ -21,9 +21,12 @@ import cpw.mods.fml.common.network.NetworkCheckHandler;
 import cpw.mods.fml.relauncher.ReflectionHelper;
 import cpw.mods.fml.relauncher.Side;
 
-@Mod( modid = "LootAdjuster", name = "Dungeon Loot Chest Adjuster", version = "@VERSION@", dependencies = "after:*")
+@Mod( modid=LootAdjuster.MODID, name="Dungeon Loot Chest Adjuster", version=LootAdjuster.VERSION, dependencies="after:*")
 public class LootAdjuster
 {
+	public static final String MODID = "lootadjuster";
+	public static final String VERSION = "@VERSION@";
+	
 	public static final Logger logger = LogManager.getFormatterLogger("LootAdjuster");
 	
     private Configuration config;
@@ -40,7 +43,7 @@ public class LootAdjuster
     	}
         this.config = new Configuration(configFile);
         this.config.load();
-        this.config.addCustomCategoryComment("loot", "Format for items in each category is as follows: \"ItemId:ItemMeta,MinFrequency,MaxFrequency,Weight\". Non-existant categories are ignored.");
+        this.config.addCustomCategoryComment("loot", "Format for items in each category is as follows: \"ModId:ItemId:ItemMeta,MinFrequency,MaxFrequency,Weight\". Non-existant categories are ignored.");
     }
 
     @EventHandler
@@ -63,6 +66,8 @@ public class LootAdjuster
                 Property lootEntry = new Property(category, itemEntries.toArray(new String[0]), Property.Type.STRING);
                 this.config.getCategory("loot").put(category, lootEntry);
             }
+            
+            this.config.save();
         }
         
         for(String category : LootConfigHelper.getLootCategories(this.config)) {
@@ -70,8 +75,6 @@ public class LootAdjuster
 
             ReflectionHelper.setPrivateValue(ChestGenHooks.class, ChestGenHooks.getInfo(category), lootEntries, "contents");
         }
-
-        this.config.save();
     }
     
     @NetworkCheckHandler

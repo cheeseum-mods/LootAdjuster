@@ -34,8 +34,12 @@ public class LootConfigHelper
                 String lootData[] = lootEntry.split(",");
                 String itemData[] = lootData[0].split(":");
 
+                if (lootEntry.isEmpty()) {
+            		continue;
+            	}
+
                 if (lootData.length < 4 || itemData.length < 2) {
-                    LootAdjuster.logger.warn("Improperly formatted loot config! Grues ahead!");
+                    LootAdjuster.logger.warn("Improperly formatted loot config: '" + lootEntry + "'! Grues ahead!");
                     continue;
                 }
 
@@ -71,7 +75,7 @@ public class LootConfigHelper
     		combinedName = String.format("%s:%s", uid.modId, uid.name);
     	} else {
     		combinedName = loot.theItemId.getItem().getUnlocalizedName();
-    		LootAdjuster.logger.error("Couldn't find unique identifier for item %s, falling back to unlocalized name, things will break!", combinedName);
+    		LootAdjuster.logger.error("Couldn't find unique identifier for item %s, falling back to unlocalized name, things might break!", combinedName);
     	}
     	
         return String.format("\"%s:%d,%d,%d,%d\"", 
