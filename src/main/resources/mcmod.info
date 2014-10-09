@@ -5,7 +5,7 @@
   "description": "User-configurable dungeon chest loot.",
   "version": "${version}",
   "mcversion": "${mcversion}",
-  "url": "https://github.com/Cheeseum/LootAdjuster",
+  "url": "https://github.com/cheeseum-mods/LootAdjuster",
   "updateUrl": "",
   "authors": ["Cheeseum"],
   "credits": "",
