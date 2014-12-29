@@ -2,11 +2,13 @@ package com.cheeseum.lootadjuster;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import net.minecraft.util.WeightedRandomChestContent;
 import net.minecraftforge.common.ChestGenHooks;
+import net.minecraftforge.common.config.ConfigCategory;
 import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.common.config.Property;
 
@@ -43,7 +45,13 @@ public class LootAdjuster
     	}
         this.config = new Configuration(configFile);
         this.config.load();
-        this.config.addCustomCategoryComment("loot", "Format for items in each category is as follows: \"ModId:ItemId:ItemMeta,MinFrequency,MaxFrequency,Weight\". Non-existant categories are ignored.");
+        this.config.addCustomCategoryComment("lootgroups", "Groups of items to be inserted as loot.\n" +
+        		"Format for Groups is S:GROUPNAME < ITEMS >, one item per line.\n" +
+        		"Format for items is \"ModId:ItemId:ItemMeta,MinFreq,MaxFreq,Weight\"\n" +
+        		"Weights are relative to the group, frequency of items in chests will be multiply with those in the group.");
+        this.config.addCustomCategoryComment("loot", "Loot chest categories.\n" +
+        		"Format for items in each category is as follows: \"ModId:ItemId:ItemMeta,MinFrequency,MaxFrequency,Weight\"\n" +
+        		"Format for groups is \"<Group Name>,MinFrequency,MaxFrequency,Weight\"");
     }
 
     @EventHandler
@@ -60,7 +68,8 @@ public class LootAdjuster
                 List<WeightedRandomChestContent> contents = ReflectionHelper.getPrivateValue(ChestGenHooks.class, cgh, "contents");
 
                 for (WeightedRandomChestContent item : contents) {
-                    itemEntries.add(LootConfigHelper.getLootString(item)); 
+                	// TODO: option to ignore subclasses that specify custom behaivor
+                    itemEntries.add(LootConfigHelper.toLootString(item)); 
                 }
                 
                 Property lootEntry = new Property(category, itemEntries.toArray(new String[0]), Property.Type.STRING);
@@ -69,11 +78,55 @@ public class LootAdjuster
             
             this.config.save();
         }
+       
+        // Temporarily holds the loot groups for use later
+        Map<String, WeightedRandomChestContent[]> lootGroups = new HashMap<String, WeightedRandomChestContent[]>();
         
-        for(String category : LootConfigHelper.getLootCategories(this.config)) {
-            List<WeightedRandomChestContent> lootEntries = LootConfigHelper.getLootForCategory(this.config, category);
-
-            ReflectionHelper.setPrivateValue(ChestGenHooks.class, ChestGenHooks.getInfo(category), lootEntries, "contents");
+        // Parse the loot groups
+        ConfigCategory lootGroupCategory = this.config.getCategory("lootgroups");
+        for (String group: lootGroupCategory.keySet()) {
+        	List<WeightedRandomChestContent> groupData = new ArrayList<WeightedRandomChestContent>();
+        	for (String entry: lootGroupCategory.get(group).getStringList()) {
+        		WeightedRandomChestContent d = LootConfigHelper.fromLootString(entry);
+        		if (d != null) {
+        			groupData.add(d);
+        		}
+        	}
+        	
+        	lootGroups.put(group, groupData.toArray(new WeightedRandomChestContent[groupData.size()]));
+        }
+        
+        // Parse user-set loot entries for chest categories
+        ConfigCategory lootCategory = this.config.getCategory("loot");
+        for(String chestCategory : lootCategory.keySet()) {
+            Property chestLoot = lootCategory.get(chestCategory);
+            
+            if (chestLoot.isList()) {
+	            List<WeightedRandomChestContent> lootList = new ArrayList<WeightedRandomChestContent>();
+	
+	            for (String lootEntry: chestLoot.getStringList()) {
+	            	if (lootEntry.replace("\"","").startsWith("!")) {
+	            		// FIXME: move this to a function with more error handling
+	            		String[] entryData = lootEntry.replace("\"","").split(",");
+	            		String group = entryData[0].substring(1);
+	            		if (lootGroups.containsKey(group)) {
+	            			lootList.add(new WeightedRandomLootGroup(lootGroups.get(group),
+	            					Integer.parseInt(entryData[1]),
+	            					Integer.parseInt(entryData[2]),
+	            					Integer.parseInt(entryData[3])));
+	            		}
+	            	} else {
+		            	WeightedRandomChestContent data = LootConfigHelper.fromLootString(lootEntry);
+		            	if (data != null) {
+		            		lootList.add(data);
+		            	}
+	            	}
+	            }
+	            
+	            // inject loot data into the chestgenhooks category
+	            // there ARE public methods to remove and add items, but reflection lets us stright-up override them
+	            ReflectionHelper.setPrivateValue(ChestGenHooks.class, ChestGenHooks.getInfo(chestCategory), lootList, "contents");
+            }
         }
     }
     
